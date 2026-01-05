@@ -45,21 +45,43 @@
    */
   onMount(async () => {
     try {
-      console.log('[App] Initializing...');
-      
+      console.log('[App] Starting initialization...');
+      console.log('[App] Environment:', {
+        userAgent: navigator.userAgent,
+        platform: navigator.platform,
+        language: navigator.language
+      });
+
+      // Add timeout to detect hanging initialization
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Initialization timeout after 30 seconds')), 30000);
+      });
+
       // Initialize geometry computer (loads Manifold)
-      const result = await geometryComputer.initialize();
-      
+      console.log('[App] Calling geometryComputer.initialize()...');
+      const result = await Promise.race([
+        geometryComputer.initialize(),
+        timeoutPromise
+      ]);
+
+      console.log('[App] Initialize result:', result);
+
       if (!result.success) {
         initError = result.error;
+        console.error('[App] Initialization failed:', initError);
         return;
       }
 
       initialized = true;
       console.log('[App] Initialized successfully');
     } catch (error) {
-      initError = `Initialization failed: ${error}`;
-      console.error('[App]', initError);
+      initError = `Initialization failed: ${error instanceof Error ? error.message : String(error)}`;
+      console.error('[App] Initialization error:', error);
+
+      // Log stack trace if available
+      if (error instanceof Error && error.stack) {
+        console.error('[App] Stack trace:', error.stack);
+      }
     }
   });
 </script>
@@ -76,15 +98,25 @@
         </svg>
       </div>
       <h1 class="cad-loading-title">Manifold CAD</h1>
-      
+
       {#if initError}
         <div class="cad-loading-error">
-          <p>Failed to initialize:</p>
+          <p>Nie udało się zainicjalizować aplikacji:</p>
           <code>{initError}</code>
+          <div class="error-hint">
+            <p>Sprawdź konsolę przeglądarki (F12) aby zobaczyć więcej szczegółów.</p>
+            <p>Możliwe przyczyny:</p>
+            <ul>
+              <li>Problem z ładowaniem modułu WASM</li>
+              <li>Niekompatybilna przeglądarka</li>
+              <li>Blokada przez Content Security Policy</li>
+            </ul>
+          </div>
         </div>
       {:else}
         <div class="cad-spinner"></div>
-        <p class="cad-loading-text">Loading geometry engine...</p>
+        <p class="cad-loading-text">Ładowanie silnika geometrii...</p>
+        <p class="cad-loading-subtext">Inicjalizacja WebAssembly modułu Manifold-3D</p>
       {/if}
     </div>
   </div>
@@ -141,6 +173,13 @@
     font-size: 14px;
     color: #94a3b8;
     margin-top: 16px;
+    margin-bottom: 4px;
+  }
+
+  .cad-loading-subtext {
+    font-size: 12px;
+    color: #64748b;
+    font-style: italic;
   }
 
   .cad-loading-error {
@@ -149,6 +188,8 @@
     border-radius: 8px;
     padding: 16px;
     margin-top: 16px;
+    max-width: 500px;
+    text-align: left;
   }
 
   .cad-loading-error p {
@@ -164,6 +205,31 @@
     padding: 8px;
     border-radius: 4px;
     word-break: break-all;
+    margin-bottom: 12px;
+  }
+
+  .error-hint {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(239, 68, 68, 0.3);
+  }
+
+  .error-hint p {
+    color: #94a3b8;
+    font-size: 13px;
+    margin-bottom: 8px;
+  }
+
+  .error-hint ul {
+    list-style: disc;
+    padding-left: 24px;
+    margin: 8px 0;
+  }
+
+  .error-hint li {
+    color: #94a3b8;
+    font-size: 12px;
+    margin: 4px 0;
   }
 
   @keyframes pulse {

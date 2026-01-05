@@ -73,43 +73,67 @@ export class ManifoldEngine {
    */
   private async doInitialize(): Promise<void> {
     try {
+      console.log('[ManifoldEngine] Starting WASM initialization...');
+
       // Dynamic import of manifold-3d
+      console.log('[ManifoldEngine] Importing manifold-3d module...');
       const ManifoldModule = await import('manifold-3d');
-      
+      console.log('[ManifoldEngine] Module imported successfully');
+
       // Initialize WASM module
+      console.log('[ManifoldEngine] Initializing WASM...');
       wasm = await ManifoldModule.default();
-      
+      console.log('[ManifoldEngine] WASM initialized:', !!wasm);
+
       // CRITICAL: Call setup() to initialize the API!
       // This is what makes Manifold.cube, sphere, etc. available
       if (typeof wasm.setup === 'function') {
+        console.log('[ManifoldEngine] Calling setup()...');
         wasm.setup();
+        console.log('[ManifoldEngine] setup() completed');
+      } else {
+        console.warn('[ManifoldEngine] No setup() function found');
       }
-      
+
       // Store references to classes
       Manifold = wasm.Manifold;
       CrossSection = wasm.CrossSection;
       ManifoldMesh = wasm.Mesh;
-      
+
+      console.log('[ManifoldEngine] Class references:', {
+        hasManifold: !!Manifold,
+        hasCrossSection: !!CrossSection,
+        hasMesh: !!ManifoldMesh
+      });
+
       // Initialize Solid module with Manifold references
+      console.log('[ManifoldEngine] Initializing Solid module...');
       const { initializeSolidModule } = await import('./Solid');
       initializeSolidModule({ Manifold, Mesh: ManifoldMesh, CrossSection });
-      
+      console.log('[ManifoldEngine] Solid module initialized');
+
       // Debug logging
-      console.log('[ManifoldEngine] Initialized');
-      console.log('[ManifoldEngine] Manifold.cube:', typeof Manifold?.cube);
-      console.log('[ManifoldEngine] Manifold.sphere:', typeof Manifold?.sphere);
-      console.log('[ManifoldEngine] Manifold.cylinder:', typeof Manifold?.cylinder);
-      console.log('[ManifoldEngine] CrossSection.circle:', typeof CrossSection?.circle);
-      console.log('[ManifoldEngine] Manifold.reserveIDs:', typeof Manifold?.reserveIDs);
-      
+      console.log('[ManifoldEngine] API verification:');
+      console.log('  - Manifold.cube:', typeof Manifold?.cube);
+      console.log('  - Manifold.sphere:', typeof Manifold?.sphere);
+      console.log('  - Manifold.cylinder:', typeof Manifold?.cylinder);
+      console.log('  - CrossSection.circle:', typeof CrossSection?.circle);
+      console.log('  - Manifold.reserveIDs:', typeof Manifold?.reserveIDs);
+
       // Set circular segments if available
       if (typeof wasm.setCircularSegments === 'function') {
         wasm.setCircularSegments(this.config.circularSegments);
+        console.log('[ManifoldEngine] Circular segments set to', this.config.circularSegments);
       }
-      
+
       this.initialized = true;
+      console.log('[ManifoldEngine] ✓ Initialization complete');
     } catch (error) {
-      console.error('[ManifoldEngine] Initialization failed:', error);
+      console.error('[ManifoldEngine] ✗ Initialization failed:', error);
+      if (error instanceof Error) {
+        console.error('[ManifoldEngine] Error message:', error.message);
+        console.error('[ManifoldEngine] Stack trace:', error.stack);
+      }
       throw error;
     }
   }
