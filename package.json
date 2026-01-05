@@ -1,0 +1,29 @@
+{
+  "name": "m-app",
+  "version": "1.0.0",
+  "description": "Professional CAD application based on Manifold-3D geometry kernel",
+  "type": "module",
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@threlte/core": "^8.3.1",
+    "@threlte/extras": "^9.0.0",
+    "manifold-3d": "^3.3.2",
+    "monaco-editor": "^0.55.1",
+    "tess2": "^1.0.0",
+    "three": "^0.182.0",
+    "three-mesh-bvh": "^0.9.4",
+    "svelte": "^5.0.0"
+  },
+  "devDependencies": {
+    "@sveltejs/adapter-auto": "^3.0.0",
+    "@sveltejs/kit": "^2.0.0",
+    "@sveltejs/vite-plugin-svelte": "^5.0.0",
+    "@tailwindcss/vite": "^4.1.18",
+    "tailwindcss": "^4.1.18",
+    "vite": "^6.0.0"
+  }
+}

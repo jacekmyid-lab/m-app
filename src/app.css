@@ -1,0 +1,610 @@
+/**
+ * ============================================================================
+ * MANIFOLD CAD - MAIN STYLESHEET
+ * ============================================================================
+ * Professional CAD application styling using Tailwind CSS v4
+ * Custom theme with dark mode optimized for CAD work
+ */
+
+@import "tailwindcss";
+
+/* ============================================================================
+   CSS CUSTOM PROPERTIES - CAD THEME
+   ============================================================================ */
+:root {
+  /* Primary Colors - Industrial Blue Theme */
+  --cad-primary: #2563eb;
+  --cad-primary-light: #3b82f6;
+  --cad-primary-dark: #1d4ed8;
+  
+  /* Accent Colors */
+  --cad-accent: #06b6d4;
+  --cad-warning: #f59e0b;
+  --cad-error: #ef4444;
+  --cad-success: #10b981;
+  
+  /* Selection Colors */
+  --cad-hover: #fbbf24;        /* Yellow for hover */
+  --cad-selected: #ef4444;     /* Red for selection */
+  --cad-highlight: #22d3ee;    /* Cyan for highlights */
+  
+  /* Background Colors - Dark Theme */
+  --cad-bg-dark: #0f172a;
+  --cad-bg-panel: #1e293b;
+  --cad-bg-panel-light: #334155;
+  --cad-bg-input: #0f172a;
+  
+  /* Text Colors */
+  --cad-text-primary: #f1f5f9;
+  --cad-text-secondary: #94a3b8;
+  --cad-text-muted: #64748b;
+  
+  /* Border Colors */
+  --cad-border: #334155;
+  --cad-border-light: #475569;
+  
+  /* Viewport Colors */
+  --cad-grid: #1e3a5f;
+  --cad-axis-x: #ef4444;
+  --cad-axis-y: #22c55e;
+  --cad-axis-z: #3b82f6;
+  
+  /* Sketch Colors */
+  --cad-sketch-line: #06b6d4;
+  --cad-sketch-construction: #6366f1;
+  --cad-sketch-constraint: #a855f7;
+  
+  /* Panel Dimensions */
+  --cad-toolbar-height: 48px;
+  --cad-statusbar-height: 32px;
+  --cad-panel-left-width: 280px;
+  --cad-panel-right-width: 320px;
+}
+
+/* ============================================================================
+   BASE STYLES
+   ============================================================================ */
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Consolas, monospace;
+  background-color: var(--cad-bg-dark);
+  color: var(--cad-text-primary);
+}
+
+/* Custom scrollbar for CAD panels */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--cad-bg-dark);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--cad-border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--cad-border-light);
+}
+
+/* ============================================================================
+   LAYOUT COMPONENTS
+   ============================================================================ */
+
+/* Main Application Container */
+.cad-app {
+  display: grid;
+  grid-template-rows: var(--cad-toolbar-height) 1fr var(--cad-statusbar-height);
+  grid-template-columns: var(--cad-panel-left-width) 1fr var(--cad-panel-right-width);
+  width: 100vw;
+  height: 100vh;
+  gap: 1px;
+  background-color: var(--cad-border);
+}
+
+/* Toolbar - spans full width */
+.cad-toolbar {
+  grid-column: 1 / -1;
+  background: linear-gradient(180deg, var(--cad-bg-panel) 0%, var(--cad-bg-dark) 100%);
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  gap: 8px;
+  border-bottom: 1px solid var(--cad-border);
+}
+
+/* Status Bar - spans full width */
+.cad-statusbar {
+  grid-column: 1 / -1;
+  background-color: var(--cad-bg-panel);
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  gap: 16px;
+  font-size: 11px;
+  color: var(--cad-text-secondary);
+  border-top: 1px solid var(--cad-border);
+}
+
+/* Panel Styles */
+.cad-panel {
+  background-color: var(--cad-bg-panel);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.cad-panel-left {
+  border-right: 1px solid var(--cad-border);
+}
+
+.cad-panel-right {
+  border-left: 1px solid var(--cad-border);
+}
+
+/* Panel Header */
+.cad-panel-header {
+  background: linear-gradient(180deg, var(--cad-bg-panel-light) 0%, var(--cad-bg-panel) 100%);
+  padding: 8px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--cad-text-secondary);
+  border-bottom: 1px solid var(--cad-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Panel Content */
+.cad-panel-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+/* ============================================================================
+   3D VIEWPORT
+   ============================================================================ */
+.cad-viewport {
+  position: relative;
+  background-color: var(--cad-bg-dark);
+  overflow: hidden;
+}
+
+.cad-viewport canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Viewport Overlay - for mode indicators */
+.cad-viewport-overlay {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* View Cube Container */
+.cad-viewcube {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 80px;
+  height: 80px;
+  pointer-events: auto;
+}
+
+/* ============================================================================
+   TREE VIEW - Model Hierarchy
+   ============================================================================ */
+.cad-tree {
+  font-size: 12px;
+}
+
+.cad-tree-item {
+  display: flex;
+  align-items: center;
+  padding: 4px 8px;
+  cursor: pointer;
+  border-radius: 4px;
+  margin: 1px 0;
+  transition: background-color 0.15s ease;
+}
+
+.cad-tree-item:hover {
+  background-color: var(--cad-bg-panel-light);
+}
+
+.cad-tree-item.selected {
+  background-color: var(--cad-primary);
+  color: white;
+}
+
+.cad-tree-item-icon {
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+  opacity: 0.7;
+}
+
+.cad-tree-item-label {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cad-tree-indent {
+  width: 16px;
+  flex-shrink: 0;
+}
+
+/* ============================================================================
+   BUTTONS & CONTROLS
+   ============================================================================ */
+.cad-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid var(--cad-border);
+  border-radius: 4px;
+  background-color: var(--cad-bg-panel);
+  color: var(--cad-text-primary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.cad-btn:hover {
+  background-color: var(--cad-bg-panel-light);
+  border-color: var(--cad-border-light);
+}
+
+.cad-btn:active {
+  background-color: var(--cad-bg-dark);
+}
+
+.cad-btn.active {
+  background-color: var(--cad-primary);
+  border-color: var(--cad-primary);
+}
+
+.cad-btn-icon {
+  width: 32px;
+  height: 32px;
+  padding: 6px;
+  border-radius: 4px;
+}
+
+.cad-btn-group {
+  display: flex;
+  gap: 2px;
+  background-color: var(--cad-bg-dark);
+  padding: 2px;
+  border-radius: 6px;
+}
+
+/* ============================================================================
+   INPUT CONTROLS
+   ============================================================================ */
+.cad-input {
+  width: 100%;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-family: inherit;
+  background-color: var(--cad-bg-input);
+  border: 1px solid var(--cad-border);
+  border-radius: 4px;
+  color: var(--cad-text-primary);
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.cad-input:focus {
+  border-color: var(--cad-primary);
+}
+
+.cad-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.cad-input-label {
+  font-size: 11px;
+  color: var(--cad-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Number Input with Scrub */
+.cad-number-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cad-number-input input {
+  width: 80px;
+  text-align: right;
+}
+
+/* ============================================================================
+   SELECTION MODES
+   ============================================================================ */
+.cad-selection-mode {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background-color: var(--cad-bg-dark);
+  border-radius: 6px;
+}
+
+.cad-selection-mode-btn {
+  padding: 4px 8px;
+  font-size: 10px;
+  font-weight: 600;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--cad-text-secondary);
+  cursor: pointer;
+}
+
+.cad-selection-mode-btn.active {
+  background-color: var(--cad-primary);
+  color: white;
+}
+
+/* ============================================================================
+   SKETCHER SPECIFIC STYLES
+   ============================================================================ */
+.cad-sketch-active {
+  border: 2px solid var(--cad-sketch-line);
+  box-shadow: inset 0 0 20px rgba(6, 182, 212, 0.1);
+}
+
+.cad-constraint-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 6px;
+  font-size: 10px;
+  font-weight: 600;
+  background-color: var(--cad-sketch-constraint);
+  color: white;
+  border-radius: 3px;
+}
+
+/* ============================================================================
+   PROPERTIES PANEL
+   ============================================================================ */
+.cad-property-section {
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--cad-border);
+}
+
+.cad-property-section:last-child {
+  border-bottom: none;
+}
+
+.cad-property-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--cad-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.cad-property-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 0;
+}
+
+.cad-property-name {
+  font-size: 12px;
+  color: var(--cad-text-secondary);
+}
+
+.cad-property-value {
+  font-size: 12px;
+  color: var(--cad-text-primary);
+}
+
+/* ============================================================================
+   MODAL / DIALOG
+   ============================================================================ */
+.cad-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.cad-modal {
+  background-color: var(--cad-bg-panel);
+  border: 1px solid var(--cad-border);
+  border-radius: 8px;
+  min-width: 320px;
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+}
+
+.cad-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background-color: var(--cad-bg-panel-light);
+  border-bottom: 1px solid var(--cad-border);
+}
+
+.cad-modal-title {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.cad-modal-content {
+  padding: 16px;
+  overflow-y: auto;
+}
+
+.cad-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 16px;
+  background-color: var(--cad-bg-dark);
+  border-top: 1px solid var(--cad-border);
+}
+
+/* ============================================================================
+   TOOLTIP
+   ============================================================================ */
+.cad-tooltip {
+  position: absolute;
+  padding: 6px 10px;
+  font-size: 11px;
+  background-color: var(--cad-bg-dark);
+  border: 1px solid var(--cad-border);
+  border-radius: 4px;
+  color: var(--cad-text-primary);
+  pointer-events: none;
+  z-index: 1000;
+  white-space: nowrap;
+}
+
+/* ============================================================================
+   CONTEXT MENU
+   ============================================================================ */
+.cad-context-menu {
+  position: fixed;
+  min-width: 160px;
+  background-color: var(--cad-bg-panel);
+  border: 1px solid var(--cad-border);
+  border-radius: 6px;
+  padding: 4px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+}
+
+.cad-context-menu-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  font-size: 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.1s ease;
+}
+
+.cad-context-menu-item:hover {
+  background-color: var(--cad-primary);
+}
+
+.cad-context-menu-separator {
+  height: 1px;
+  background-color: var(--cad-border);
+  margin: 4px 8px;
+}
+
+/* ============================================================================
+   DIMENSION ANNOTATIONS
+   ============================================================================ */
+.cad-dimension {
+  position: absolute;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--cad-accent);
+  background-color: rgba(15, 23, 42, 0.9);
+  padding: 2px 6px;
+  border-radius: 3px;
+  pointer-events: none;
+}
+
+/* ============================================================================
+   LOADING & PROGRESS
+   ============================================================================ */
+.cad-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.cad-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--cad-border);
+  border-top-color: var(--cad-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ============================================================================
+   RESPONSIVE ADJUSTMENTS
+   ============================================================================ */
+@media (max-width: 1200px) {
+  :root {
+    --cad-panel-left-width: 240px;
+    --cad-panel-right-width: 280px;
+  }
+}
+
+@media (max-width: 900px) {
+  .cad-app {
+    grid-template-columns: 1fr;
+  }
+  
+  .cad-panel-left,
+  .cad-panel-right {
+    position: fixed;
+    top: var(--cad-toolbar-height);
+    bottom: var(--cad-statusbar-height);
+    z-index: 100;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+  
+  .cad-panel-left.open {
+    transform: translateX(0);
+  }
+  
+  .cad-panel-right {
+    right: 0;
+    transform: translateX(100%);
+  }
+  
+  .cad-panel-right.open {
+    transform: translateX(0);
+  }
+}
