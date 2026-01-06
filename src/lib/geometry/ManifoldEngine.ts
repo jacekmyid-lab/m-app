@@ -75,15 +75,46 @@ export class ManifoldEngine {
     try {
       console.log('[ManifoldEngine] Starting WASM initialization...');
 
-      // Dynamic import of manifold-3d
+      // Dynamic import of manifold-3d with retry logic
       console.log('[ManifoldEngine] Importing manifold-3d module...');
-      const ManifoldModule = await import('manifold-3d');
-      console.log('[ManifoldEngine] Module imported successfully');
+      let ManifoldModule;
+      let importAttempts = 0;
+      while (!ManifoldModule && importAttempts < 3) {
+        try {
+          importAttempts++;
+          console.log(`[ManifoldEngine] Import attempt ${importAttempts}...`);
+          ManifoldModule = await import('manifold-3d');
+          console.log('[ManifoldEngine] Module imported successfully');
+          break;
+        } catch (importError) {
+          console.warn(`[ManifoldEngine] Import attempt ${importAttempts} failed:`, importError);
+          if (importAttempts < 3) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+          } else {
+            throw importError;
+          }
+        }
+      }
 
       // Initialize WASM module
       console.log('[ManifoldEngine] Initializing WASM...');
-      wasm = await ManifoldModule.default();
-      console.log('[ManifoldEngine] WASM initialized:', !!wasm);
+      let wasmAttempts = 0;
+      while (!wasm && wasmAttempts < 3) {
+        try {
+          wasmAttempts++;
+          console.log(`[ManifoldEngine] WASM init attempt ${wasmAttempts}...`);
+          wasm = await ManifoldModule.default();
+          console.log('[ManifoldEngine] WASM initialized:', !!wasm);
+          break;
+        } catch (wasmError) {
+          console.warn(`[ManifoldEngine] WASM init attempt ${wasmAttempts} failed:`, wasmError);
+          if (wasmAttempts < 3) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+          } else {
+            throw wasmError;
+          }
+        }
+      }
 
       // CRITICAL: Call setup() to initialize the API!
       // This is what makes Manifold.cube, sphere, etc. available

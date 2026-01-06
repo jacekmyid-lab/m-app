@@ -14,6 +14,13 @@ export default defineConfig({
     format: 'es'
   },
   build: {
-    target: 'esnext'
+    target: 'esnext',
+    assetsInlineLimit: 0
+  },
+  server: {
+    headers: {
+      'Cross-Origin-Opener-Policy': 'same-origin',
+      'Cross-Origin-Embedder-Policy': 'require-corp'
+    }
   }
 });
