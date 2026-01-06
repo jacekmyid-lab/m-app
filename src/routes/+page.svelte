@@ -27,46 +27,37 @@
   export const prerender = true;
 
   import { onMount } from 'svelte';
-  import Toolbar from '../lib/ui/Toolbar.svelte';
-  import LeftPanel from '../lib/ui/LeftPanel.svelte';
-  import RightPanel from '../lib/ui/RightPanel.svelte';
-  import StatusBar from '../lib/ui/StatusBar.svelte';
-  import Viewport from '../lib/viewport/Viewport.svelte';
-  import { geometryComputer } from '../lib/geometry/GeometryComputer';
-  import { documentStore, toolStore, selectionModeStore } from '$lib/stores/cadStore';
+
+  // Lazy load components
+  let Toolbar: any;
+  let LeftPanel: any;
+  let RightPanel: any;
+  let StatusBar: any;
+  let Viewport: any;
 
   // Application initialization state
   let initialized = $state(false);
   let initError = $state<string | null>(null);
+  let showScreen = $state(true);
 
-  /**
-   * Initialize the application
-   * - Load Manifold WASM module
-   * - Set up event listeners
-   * - Create default document
-   */
   onMount(async () => {
     try {
       console.log('[App] Starting initialization...');
-      console.log('[App] Environment:', {
-        userAgent: navigator.userAgent,
-        platform: navigator.platform,
-        language: navigator.language
-      });
 
-      // Add timeout to detect hanging initialization
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Initialization timeout after 30 seconds')), 30000);
-      });
+      // Load components dynamically
+      Toolbar = (await import('../lib/ui/Toolbar.svelte')).default;
+      LeftPanel = (await import('../lib/ui/LeftPanel.svelte')).default;
+      RightPanel = (await import('../lib/ui/RightPanel.svelte')).default;
+      StatusBar = (await import('../lib/ui/StatusBar.svelte')).default;
+      Viewport = (await import('../lib/viewport/Viewport.svelte')).default;
 
-      // Initialize geometry computer (loads Manifold)
-      console.log('[App] Calling geometryComputer.initialize()...');
-      const result = await Promise.race([
-        geometryComputer.initialize(),
-        timeoutPromise
-      ]);
+      console.log('[App] Components loaded');
 
-      console.log('[App] Initialize result:', result);
+      // Now load geometry computer
+      const { geometryComputer } = await import('../lib/geometry/GeometryComputer');
+
+      console.log('[App] Initializing geometry computer...');
+      const result = await geometryComputer.initialize();
 
       if (!result.success) {
         initError = result.error;
@@ -74,21 +65,20 @@
         return;
       }
 
+      console.log('[App] Loading stores...');
+      const { documentStore } = await import('$lib/stores/cadStore');
+
       initialized = true;
+      showScreen = false;
       console.log('[App] Initialized successfully');
     } catch (error) {
       initError = `Initialization failed: ${error instanceof Error ? error.message : String(error)}`;
       console.error('[App] Initialization error:', error);
-
-      // Log stack trace if available
-      if (error instanceof Error && error.stack) {
-        console.error('[App] Stack trace:', error.stack);
-      }
     }
   });
 </script>
 
-{#if !initialized}
+{#if showScreen && !initialized}
   <!-- Loading Screen -->
   <div class="cad-loading-screen">
     <div class="cad-loading-content">
@@ -122,23 +112,35 @@
       {/if}
     </div>
   </div>
-{:else}
+{:else if initialized && Toolbar && LeftPanel && RightPanel && StatusBar && Viewport}
   <!-- Main Application -->
   <div class="cad-app">
-    <!-- Top Toolbar -->
-    <Toolbar />
-    
-    <!-- Left Panel: Tree & Tools -->
-    <LeftPanel />
-    
-    <!-- Center: 3D Viewport -->
-    <Viewport />
-    
-    <!-- Right Panel: Properties -->
-    <RightPanel />
-    
-    <!-- Bottom Status Bar -->
-    <StatusBar />
+    <svelte:component this={Toolbar} />
+    <svelte:component this={LeftPanel} />
+    <svelte:component this={Viewport} />
+    <svelte:component this={RightPanel} />
+    <svelte:component this={StatusBar} />
+  </div>
+{:else if !initialized}
+  <!-- Fallback loading screen if components failed to load -->
+  <div class="cad-loading-screen">
+    <div class="cad-loading-content">
+      <h1 class="cad-loading-title">Manifold CAD</h1>
+      {#if initError}
+        <p style="color: #ef4444; margin-top: 16px;">{initError}</p>
+      {:else}
+        <div class="cad-spinner" style="margin-top: 16px;"></div>
+        <p class="cad-loading-text">Ładowanie aplikacji...</p>
+      {/if}
+    </div>
+  </div>
+{:else}
+  <!-- Error state -->
+  <div class="cad-loading-screen">
+    <div class="cad-loading-content">
+      <h1 class="cad-loading-title">Błąd</h1>
+      <p style="color: #ef4444; margin-top: 16px;">Nie udało się załadować komponentów aplikacji.</p>
+    </div>
   </div>
 {/if}
 
