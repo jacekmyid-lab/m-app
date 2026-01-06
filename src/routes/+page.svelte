@@ -24,6 +24,8 @@
   @component +page.svelte
 -->
 <script lang="ts">
+  export const prerender = true;
+
   import { onMount } from 'svelte';
   import Toolbar from '../lib/ui/Toolbar.svelte';
   import LeftPanel from '../lib/ui/LeftPanel.svelte';
