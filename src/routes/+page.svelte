@@ -24,16 +24,15 @@
   @component +page.svelte
 -->
 <script lang="ts">
-  export const prerender = true;
-
   import { onMount } from 'svelte';
+  import type { ComponentType, SvelteComponent } from 'svelte';
 
-  // Lazy load components
-  let Toolbar: any;
-  let LeftPanel: any;
-  let RightPanel: any;
-  let StatusBar: any;
-  let Viewport: any;
+  // Lazy load components - używamy $state dla reaktywności
+  let Toolbar = $state<ComponentType<SvelteComponent> | null>(null);
+  let LeftPanel = $state<ComponentType<SvelteComponent> | null>(null);
+  let RightPanel = $state<ComponentType<SvelteComponent> | null>(null);
+  let StatusBar = $state<ComponentType<SvelteComponent> | null>(null);
+  let Viewport = $state<ComponentType<SvelteComponent> | null>(null);
 
   // Application initialization state
   let initialized = $state(false);
@@ -113,13 +112,13 @@
     </div>
   </div>
 {:else if initialized && Toolbar && LeftPanel && RightPanel && StatusBar && Viewport}
-  <!-- Main Application -->
+  <!-- Main Application - renderowanie bezpośrednie zamiast svelte:component -->
   <div class="cad-app">
-    <svelte:component this={Toolbar} />
-    <svelte:component this={LeftPanel} />
-    <svelte:component this={Viewport} />
-    <svelte:component this={RightPanel} />
-    <svelte:component this={StatusBar} />
+    <Toolbar />
+    <LeftPanel />
+    <Viewport />
+    <RightPanel />
+    <StatusBar />
   </div>
 {:else if !initialized}
   <!-- Fallback loading screen if components failed to load -->
